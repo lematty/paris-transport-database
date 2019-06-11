@@ -1,6 +1,6 @@
 #!/bin/bash
 
-zippath="../src/assets/geojson/source/Buses/"
+zippath="./source/Buses/"
 
 mkdir ziptmp
 
