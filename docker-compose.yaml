@@ -1,0 +1,16 @@
+version: '3'
+services:
+  postgres:
+    restart: always
+    image: postgres:latest
+    volumes:
+      - ./dbinit/:/docker-entrypoint-initdb.d/
+      - data
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=pt
+      - POSTGRES_PASSWORD=pt
+      - POSTGRES_DB=paristransport
+volumes:
+  data:
