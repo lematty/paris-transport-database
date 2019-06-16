@@ -1,6 +1,6 @@
 #!/bin/bash
 
-zippath="./source/Buses/"
+zippath="./source/buses/"
 
 mkdir ziptmp
 
