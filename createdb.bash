@@ -15,7 +15,7 @@ function process_zip() {
     tmpdir="${name}_tmp"
     seen=$(ls dbinit | grep "$name")
     if [[ ${seen} != '' ]]; then
-        continue
+        return
     fi
 
     mkdir -p ${tmpdir}
