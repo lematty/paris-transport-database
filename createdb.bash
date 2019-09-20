@@ -1,6 +1,6 @@
 #!/bin/bash
 
-zippath="./source/buses/"
+zippath="./source/Buses/"
 
 ziplist=($(ls ${zippath}*.zip))
 
@@ -22,13 +22,13 @@ function process_zip() {
     unzip ${1} -d ${tmpdir}
 
     for t in ${tmpdir}/*.txt; do
-        python ./csv2postgres.py ./${tmpdir} ${name}
+        python3 ./csv2postgres.py ./${tmpdir} ${name}
     done
      rm -rf ${tmpdir}
 }
 
 if [[ "$1" == "schema" ]]; then
-    python ./schema.py && mv 0_schema.sql dbinit
+    python3 ./schema.py && mv 0_schema.sql dbinit
     exit 0
 fi
 
