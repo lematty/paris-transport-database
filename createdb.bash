@@ -1,6 +1,6 @@
 #!/bin/bash
 
-zippath="./source/Buses/"
+zippath="./raw-data/"
 
 ziplist=($(ls ${zippath}*.zip))
 
@@ -11,9 +11,9 @@ function work() {
 }
 
 function process_zip() {
-    name="${1##*/}"
-    tmpdir="${name}_tmp"
-    seen=$(ls dbinit | grep "$name")
+    directory="${1##*/}"
+    tmpdir="${directory}_tmp"
+    seen=$(ls dbinit | grep "$directory")
     if [[ ${seen} != '' ]]; then
         return
     fi
@@ -21,10 +21,10 @@ function process_zip() {
     mkdir -p ${tmpdir}
     unzip ${1} -d ${tmpdir}
 
-    for t in ${tmpdir}/*.txt; do
-        python3 ./csv2postgres.py ./${tmpdir} ${name}
-    done
-     rm -rf ${tmpdir}
+    python3 ./csv2postgres.py ./${tmpdir} ${directory}
+
+    echo "removing $tmpdir"
+    rm -rf ${tmpdir}
 }
 
 if [[ "$1" == "schema" ]]; then
@@ -32,25 +32,35 @@ if [[ "$1" == "schema" ]]; then
     exit 0
 fi
 
-# Divide the list into 5 sub-lists.
-i=0 n=0 a=() b=() c=() d=() e=()
-while ((i < ${#ziplist[*]})); do
-    echo ${ziplist[i]}
-    a[n]=${ziplist[i]}
-    b[n]=${ziplist[i+1]}
-    c[n]=${ziplist[i+2]}
-    d[n]=${ziplist[i+3]}
-    e[n]=${ziplist[i+4]}
-    ((i+=5, n++))
-done
+if [[ ${#ziplist[*]} > 1 ]]; then
+    echo "multiple gtfs files detected"
+    # Divide the list into 5 sub-lists.
+    i=0 n=0 a=() b=() c=() d=() e=()
+    while ((i < ${#ziplist[*]})); do
+        echo ${ziplist[i]}
+        a[n]=${ziplist[i]}
+        b[n]=${ziplist[i+1]}
+        c[n]=${ziplist[i+2]}
+        d[n]=${ziplist[i+3]}
+        e[n]=${ziplist[i+4]}
+        ((i+=5, n++))
+    done
 
+    # Process the sub-lists in parallel
+    work "${a[@]}" &
+    work "${b[@]}" &
+    work "${c[@]}" &
+    work "${d[@]}" &
+    work "${e[@]}" &
+    wait
+else
+    echo "one gtfs file detected"
+    echo ${ziplist[0]}
+    a=()
+    a[0]=${ziplist[0]}
+    work "${a[@]}" &
+    wait
+fi
 
-# Process the sub-lists in parallel
-work "${a[@]}" &
-work "${b[@]}" &
-work "${c[@]}" &
-work "${d[@]}" &
-work "${e[@]}" &
-wait
-
+echo "moving sql files to dbinit"
 mv *.sql dbinit
