@@ -40,9 +40,10 @@ def parse_csvfiles(db: Database, csvfiles: list, filename: str):
             reader = csv.DictReader(f)
             insert_prefix = f"INSERT INTO {table_name} ({','.join([k for k in reader.fieldnames])}) VALUES"
             current_statement = insert_prefix
+            batch_size = 50000
             for (i, row) in enumerate(reader):
                 # batch insert statements for large tables
-                if (i % 400000 == 0 and i != 0):
+                if (i % batch_size == 0 and i != 0):
                     statement += f"{replace_comma_with_semi(current_statement)}"
                     current_statement = f"\n\n{insert_prefix}"
                 current_statement += f"\n({','.join([insert_repr(table, val) for val in row.items()])}),"

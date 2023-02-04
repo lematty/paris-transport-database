@@ -82,10 +82,10 @@ class Database:
             filename = "0_schema.sql"
 
         with open(filename, "w") as f:
-            for table in self.tables:
+            for table in self.insert_order:
                 table: Table
-                f.write(f"create table {table.name} (\n")
-                f.write(",\n".join([c.sql_repr() for c in table.columns]))
+                f.write(f"CREATE TABLE {table.name} (\n")
+                f.write(",\n".join([column.sql_repr() for column in table.columns]))
                 f.write(f"\n);\n")
 
                 foreign_keys = table.get_foreign_keys()
@@ -105,78 +105,8 @@ def init_db_schema():
     agency_table.add_column(Column("agency_timezone", "varchar(15)"))
     agency_table.add_column(Column("agency_lang", "varchar(4)"))
     agency_table.add_column(Column("agency_phone", "varchar(15)"))
-    agency_table.add_column(Column("agency_email", "varchar(15)")) 
+    agency_table.add_column(Column("agency_email", "varchar(15)"))
     db.add_table(agency_table)
-
-    # routes
-    routes_table = Table("routes")
-    routes_table.add_column(Column("route_id", "varchar(255)", is_primary_key=True))
-    routes_table.add_column(Column("agency_id", "varchar(255)", foreign_key_table="agency"))
-    routes_table.add_column(Column("route_short_name", "varchar(255)"))
-    routes_table.add_column(Column("route_long_name", "varchar(255)"))
-    routes_table.add_column(Column("route_desc", "varchar(255)"))
-    routes_table.add_column(Column("route_type", "varchar(255)"))
-    routes_table.add_column(Column("route_url", "varchar(255)"))
-    routes_table.add_column(Column("route_color", "varchar(255)"))
-    routes_table.add_column(Column("route_text_color", "varchar(255)"))
-    routes_table.add_column(Column("route_sort_order", "varchar(255)")) 
-    db.add_table(routes_table)
-
-    # trips
-    trips_table = Table("trips")
-    trips_table.add_column(Column("trip_id", "varchar(255)", is_primary_key=True))
-    trips_table.add_column(Column("route_id", "varchar(255)", foreign_key_table="routes"))
-    trips_table.add_column(Column("service_id", "varchar(255)"))
-    trips_table.add_column(Column("trip_headsign", "varchar(255)"))
-    trips_table.add_column(Column("trip_short_name", "varchar(255)"))
-    trips_table.add_column(Column("direction_id", "varchar(255)"))
-    trips_table.add_column(Column("block_id", "varchar(255)")) 
-    trips_table.add_column(Column("shape_id", "varchar(255)"))
-    trips_table.add_column(Column("wheelchair_accessible", "int")) 
-    trips_table.add_column(Column("bikes_allowed", "int")) 
-    db.add_table(trips_table)
-
-    # stops
-    stops_table = Table("stops")
-    stops_table.add_column(Column("stop_id", "varchar(255)", is_primary_key=True))
-    stops_table.add_column(Column("stop_code", "int"))
-    stops_table.add_column(Column("stop_name", "varchar(255)"))
-    stops_table.add_column(Column("stop_desc", "varchar(255)"))
-    stops_table.add_column(Column("stop_lon", "varchar(255)"))
-    stops_table.add_column(Column("stop_lat", "varchar(255)"))
-    stops_table.add_column(Column("zone_id", "varchar(255)")) 
-    stops_table.add_column(Column("stop_url", "varchar(255)")) 
-    stops_table.add_column(Column("location_type", "varchar(255)"))
-    stops_table.add_column(Column("parent_station", "varchar(255)"))
-    stops_table.add_column(Column("stop_timezone", "varchar(255)")) 
-    stops_table.add_column(Column("level_id", "varchar(255)")) 
-    stops_table.add_column(Column("wheelchair_boarding", "varchar(255)")) 
-    stops_table.add_column(Column("platform_code", "varchar(255)")) 
-    db.add_table(stops_table)
-
-    # transfers
-    transfers_table = Table("transfers")
-    transfers_table.add_column(Column("transfer_id", "serial", is_primary_key=True))
-    transfers_table.add_column(Column("from_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
-    transfers_table.add_column(Column("to_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
-    transfers_table.add_column(Column("transfer_type", "int"))
-    transfers_table.add_column(Column("min_transfer_time", "int"))
-    db.add_table(transfers_table)
-
-    # stop_times
-    stoptimes_table = Table("stop_times")
-    stoptimes_table.add_column(Column("stop_time_id", "serial", is_primary_key=True))
-    stoptimes_table.add_column(Column("trip_id", "varchar(255)", foreign_key_table="trips"))
-    stoptimes_table.add_column(Column("arrival_time", "varchar(63)"))
-    stoptimes_table.add_column(Column("departure_time", "varchar(63)"))
-    stoptimes_table.add_column(Column("stop_id", "varchar(255)", foreign_key_table="stops"))
-    stoptimes_table.add_column(Column("stop_sequence", "int"))
-    stoptimes_table.add_column(Column("pickup_type", "varchar(255)")) 
-    stoptimes_table.add_column(Column("drop_off_type", "varchar(255)")) 
-    stoptimes_table.add_column(Column("local_zone_id", "varchar(255)")) 
-    stoptimes_table.add_column(Column("stop_headsign", "varchar(255)"))
-    stoptimes_table.add_column(Column("timepoint", "varchar(255)"))
-    db.add_table(stoptimes_table)
 
     # calendar
     calendar_table = Table("calendar")
@@ -206,15 +136,47 @@ def init_db_schema():
     pathways_table.add_column(Column("from_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
     pathways_table.add_column(Column("to_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
     pathways_table.add_column(Column("pathway_mode", "varchar(15)"))
-    pathways_table.add_column(Column("is_bidirectional", "varchar(4)"))
+    pathways_table.add_column(Column("is_bidirectional", "int"))
     pathways_table.add_column(Column("length", "varchar(15)"))
-    pathways_table.add_column(Column("traversal_time", "varchar(15)"))
+    pathways_table.add_column(Column("traversal_time", "int"))
     pathways_table.add_column(Column("stair_count", "varchar(15)"))
     pathways_table.add_column(Column("max_slope", "varchar(15)"))
     pathways_table.add_column(Column("min_width", "varchar(15)"))
     pathways_table.add_column(Column("signposted_as", "varchar(15)"))
     pathways_table.add_column(Column("reversed_signposted_as", "varchar(15)"))
     db.add_table(pathways_table)
+
+    # routes
+    routes_table = Table("routes")
+    routes_table.add_column(Column("route_id", "varchar(255)", is_primary_key=True))
+    routes_table.add_column(Column("agency_id", "varchar(255)", foreign_key_table="agency"))
+    routes_table.add_column(Column("route_short_name", "varchar(255)"))
+    routes_table.add_column(Column("route_long_name", "varchar(255)"))
+    routes_table.add_column(Column("route_desc", "varchar(255)"))
+    routes_table.add_column(Column("route_type", "int"))
+    routes_table.add_column(Column("route_url", "varchar(255)"))
+    routes_table.add_column(Column("route_color", "varchar(255)"))
+    routes_table.add_column(Column("route_text_color", "varchar(255)"))
+    routes_table.add_column(Column("route_sort_order", "varchar(255)"))
+    db.add_table(routes_table)
+
+    # stops
+    stops_table = Table("stops")
+    stops_table.add_column(Column("stop_id", "varchar(255)", is_primary_key=True))
+    stops_table.add_column(Column("stop_code", "int"))
+    stops_table.add_column(Column("stop_name", "varchar(255)"))
+    stops_table.add_column(Column("stop_desc", "varchar(255)"))
+    stops_table.add_column(Column("stop_lon", "varchar(255)"))
+    stops_table.add_column(Column("stop_lat", "varchar(255)"))
+    stops_table.add_column(Column("zone_id", "int"))
+    stops_table.add_column(Column("stop_url", "varchar(255)"))
+    stops_table.add_column(Column("location_type", "varchar(255)"))
+    stops_table.add_column(Column("parent_station", "varchar(255)"))
+    stops_table.add_column(Column("stop_timezone", "varchar(255)"))
+    stops_table.add_column(Column("level_id", "varchar(255)"))
+    stops_table.add_column(Column("wheelchair_boarding", "int"))
+    stops_table.add_column(Column("platform_code", "varchar(255)"))
+    db.add_table(stops_table)
 
     # stop_extensions
     stop_extensions_table = Table("stop_extensions")
@@ -224,15 +186,53 @@ def init_db_schema():
     stop_extensions_table.add_column(Column("object_code", "varchar(255)"))
     db.add_table(stop_extensions_table)
 
+    # stop_times
+    stoptimes_table = Table("stop_times")
+    stoptimes_table.add_column(Column("stop_time_id", "serial", is_primary_key=True))
+    stoptimes_table.add_column(Column("trip_id", "varchar(255)", foreign_key_table="trips"))
+    stoptimes_table.add_column(Column("arrival_time", "varchar(63)"))
+    stoptimes_table.add_column(Column("departure_time", "varchar(63)"))
+    stoptimes_table.add_column(Column("stop_id", "varchar(255)", foreign_key_table="stops"))
+    stoptimes_table.add_column(Column("stop_sequence", "int"))
+    stoptimes_table.add_column(Column("pickup_type", "varchar(255)"))
+    stoptimes_table.add_column(Column("drop_off_type", "varchar(255)"))
+    stoptimes_table.add_column(Column("local_zone_id", "varchar(255)"))
+    stoptimes_table.add_column(Column("stop_headsign", "varchar(255)"))
+    stoptimes_table.add_column(Column("timepoint", "varchar(255)"))
+    db.add_table(stoptimes_table)
+
+    # transfers
+    transfers_table = Table("transfers")
+    transfers_table.add_column(Column("transfer_id", "serial", is_primary_key=True))
+    transfers_table.add_column(Column("from_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
+    transfers_table.add_column(Column("to_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
+    transfers_table.add_column(Column("transfer_type", "int"))
+    transfers_table.add_column(Column("min_transfer_time", "int"))
+    db.add_table(transfers_table)
+
+    # trips
+    trips_table = Table("trips")
+    trips_table.add_column(Column("trip_id", "varchar(255)", is_primary_key=True))
+    trips_table.add_column(Column("route_id", "varchar(255)", foreign_key_table="routes"))
+    trips_table.add_column(Column("service_id", "varchar(255)", foreign_key_table="calendar"))
+    trips_table.add_column(Column("trip_headsign", "varchar(255)"))
+    trips_table.add_column(Column("trip_short_name", "varchar(255)"))
+    trips_table.add_column(Column("direction_id", "varchar(255)"))
+    trips_table.add_column(Column("block_id", "varchar(255)"))
+    trips_table.add_column(Column("shape_id", "varchar(255)"))
+    trips_table.add_column(Column("wheelchair_accessible", "int"))
+    trips_table.add_column(Column("bikes_allowed", "int"))
+    db.add_table(trips_table)
+
     db.insert_order = [
         agency_table,
         routes_table,
-        trips_table,
         stops_table,
         transfers_table,
-        stoptimes_table,
         calendar_table,
         calendardates_table,
+        trips_table,
+        stoptimes_table,
         pathways_table,
         stop_extensions_table,
     ]

@@ -22,22 +22,21 @@ docker --version
 
 # Download data
 Use the following command to download the zip file containing the data. This data changes every 3 weeks.
-```bash
-# navigate to raw-data folder to download the file
-cd raw-data
-
-# download zip file transport-data.zip
-curl -o transport-data.zip https://data.iledefrance-mobilites.fr/api/v2/catalog/datasets/offre-horaires-tc-gtfs-idfm/files/a925e164271e4bca93433756d6a340d1
-```
 
 # Initializing the database
 ```bash
-# clear old data before starting
+# clear old insert statements before starting. Note that this data changes every 3 weeks.
 rm -rf dbinit
+
+# clear database data
+docker-compose down --volumes
 
 # create database schema
 ./createdb.bash schema
 
-# build database and insert data (this may take a while)
+# create insert statements (this may take a while)
 ./createdb.bash
+
+# launch db
+docker-compose -f docker-compose.yaml up
 ```
