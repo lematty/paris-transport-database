@@ -9,7 +9,10 @@ This repository will do the following:
 5. Insert data into tables.
 
 # Prerequisites
-You will need [Python 3.7](https://www.python.org/downloads/) and [Docker](https://www.docker.com/) installed.
+You will need:
+- [Python 3.7](https://www.python.org/downloads/)
+- [Docker](https://www.docker.com/)
+- [Postgres](https://www.postgresql.org/)
 
 You can check if installed with:
 ```bash
@@ -18,25 +21,22 @@ python3.7 --version
 
 # Docker
 docker --version
-```
 
-# Download data
-Use the following command to download the zip file containing the data. This data changes every 3 weeks.
+# Postgres
+psql --version
+```
 
 # Initializing the database
 ```bash
-# clear old insert statements before starting. Note that this data changes every 3 weeks.
-rm -rf dbinit
+# create database schema & insert statements (this may take a while)
+make create-dbinit
 
-# clear database data
-docker-compose down --volumes
+# remove database schema & insert statements. Note that this data changes every 3 weeks.
+make remove-dbinit
 
-# create database schema
-./createdb.bash schema
+# launch database
+make start-db
 
-# create insert statements (this may take a while)
-./createdb.bash
-
-# launch db
-docker-compose -f docker-compose.yaml up
+# clear database data (db needs to be running if clearing old data)
+make clear-db
 ```

@@ -8,7 +8,7 @@ from schema import Database, Table, init_db_schema
 insert_statements = {}
 
 
-def write(filename: str, stmt: str): 
+def write(filename: str, stmt: str):
     with open(filename, "w") as f:
         f.write(stmt)
 
@@ -53,7 +53,8 @@ def parse_csvfiles(db: Database, csvfiles: list, filename: str):
             insert_statements[table_name] = statement
 
     for (i, table) in enumerate(db.insert_order):
-        write(f"{i+1}_{table.name}_{filename}.sql", insert_statements[table.name])
+        file_number = str(i+1).zfill(2)
+        write(f"{file_number}_{table.name}_{filename}.sql", insert_statements[table.name])
 
 db = init_db_schema()
 parse_csvfiles(db, get_all_files(sys.argv[1]), sys.argv[2])

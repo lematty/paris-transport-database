@@ -30,7 +30,7 @@ function process_zip() {
 
 if [[ "$1" == "schema" ]]; then
     curl -o "./${zippath}/transport-data.zip" https://data.iledefrance-mobilites.fr/api/v2/catalog/datasets/offre-horaires-tc-gtfs-idfm/files/a925e164271e4bca93433756d6a340d1
-    python3 ./schema.py && mv 0_schema.sql dbinit
+    python3 ./schema.py && mv 00_schema.sql dbinit
     exit 0
 fi
 

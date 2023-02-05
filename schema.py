@@ -1,12 +1,13 @@
 class Column:
     def __init__(self, name: str, primitive: str, foreign_key_table: str = None,
-                 foreign_key_column: str = None, is_primary_key: bool = False, is_unique: bool = False):
+                 foreign_key_column: str = None, is_primary_key: bool = False, is_unique: bool = False, is_nullable: bool = True):
         self.name = name
         self.primitive = primitive
         self.is_primary_key = is_primary_key
         self.is_unique = is_unique
         self.foreign_key_table = foreign_key_table
         self.foreign_key_column = foreign_key_column
+        self.is_nullable = is_nullable
 
         if self.foreign_key_table and not self.foreign_key_column:
             self.foreign_key_column = self.name
@@ -19,6 +20,8 @@ class Column:
             sql += " unique"
         if self.foreign_key_table:
             sql += f" references {self.foreign_key_table}({self.foreign_key_column})"
+        if not self.is_nullable or self.foreign_key_table:
+            sql += " NOT NULL"
         return sql
 
     def insert_repr(self, val: str) -> str:
@@ -79,7 +82,7 @@ class Database:
 
     def build(self, filename: str = None):
         if not filename:
-            filename = "0_schema.sql"
+            filename = "00_schema.sql"
 
         with open(filename, "w") as f:
             for table in self.insert_order:
@@ -135,9 +138,9 @@ def init_db_schema():
     pathways_table.add_column(Column("pathway_id", "varchar(255)", is_primary_key=True))
     pathways_table.add_column(Column("from_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
     pathways_table.add_column(Column("to_stop_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
-    pathways_table.add_column(Column("pathway_mode", "varchar(15)"))
+    pathways_table.add_column(Column("pathway_mode", "int"))
     pathways_table.add_column(Column("is_bidirectional", "int"))
-    pathways_table.add_column(Column("length", "varchar(15)"))
+    pathways_table.add_column(Column("length", "int"))
     pathways_table.add_column(Column("traversal_time", "int"))
     pathways_table.add_column(Column("stair_count", "varchar(15)"))
     pathways_table.add_column(Column("max_slope", "varchar(15)"))
@@ -170,7 +173,7 @@ def init_db_schema():
     stops_table.add_column(Column("stop_lat", "varchar(255)"))
     stops_table.add_column(Column("zone_id", "int"))
     stops_table.add_column(Column("stop_url", "varchar(255)"))
-    stops_table.add_column(Column("location_type", "varchar(255)"))
+    stops_table.add_column(Column("location_type", "int"))
     stops_table.add_column(Column("parent_station", "varchar(255)"))
     stops_table.add_column(Column("stop_timezone", "varchar(255)"))
     stops_table.add_column(Column("level_id", "varchar(255)"))
@@ -181,7 +184,7 @@ def init_db_schema():
     # stop_extensions
     stop_extensions_table = Table("stop_extensions")
     stop_extensions_table.add_column(Column("stop_extension_id", "serial", is_primary_key=True))
-    stop_extensions_table.add_column(Column("object_id", "varchar(255)", foreign_key_column="stop_id"))
+    stop_extensions_table.add_column(Column("object_id", "varchar(255)", foreign_key_table="stops", foreign_key_column="stop_id"))
     stop_extensions_table.add_column(Column("object_system", "varchar(255)"))
     stop_extensions_table.add_column(Column("object_code", "varchar(255)"))
     db.add_table(stop_extensions_table)
@@ -194,11 +197,11 @@ def init_db_schema():
     stoptimes_table.add_column(Column("departure_time", "varchar(63)"))
     stoptimes_table.add_column(Column("stop_id", "varchar(255)", foreign_key_table="stops"))
     stoptimes_table.add_column(Column("stop_sequence", "int"))
-    stoptimes_table.add_column(Column("pickup_type", "varchar(255)"))
-    stoptimes_table.add_column(Column("drop_off_type", "varchar(255)"))
+    stoptimes_table.add_column(Column("pickup_type", "int"))
+    stoptimes_table.add_column(Column("drop_off_type", "int"))
     stoptimes_table.add_column(Column("local_zone_id", "varchar(255)"))
     stoptimes_table.add_column(Column("stop_headsign", "varchar(255)"))
-    stoptimes_table.add_column(Column("timepoint", "varchar(255)"))
+    stoptimes_table.add_column(Column("timepoint", "int"))
     db.add_table(stoptimes_table)
 
     # transfers
@@ -217,7 +220,7 @@ def init_db_schema():
     trips_table.add_column(Column("service_id", "varchar(255)", foreign_key_table="calendar"))
     trips_table.add_column(Column("trip_headsign", "varchar(255)"))
     trips_table.add_column(Column("trip_short_name", "varchar(255)"))
-    trips_table.add_column(Column("direction_id", "varchar(255)"))
+    trips_table.add_column(Column("direction_id", "int"))
     trips_table.add_column(Column("block_id", "varchar(255)"))
     trips_table.add_column(Column("shape_id", "varchar(255)"))
     trips_table.add_column(Column("wheelchair_accessible", "int"))
