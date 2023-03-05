@@ -1,8 +1,8 @@
 ## Description
-Database creation for Paris transportation systems.
+Database creation for Paris transportation systems. This database can be used for any backend application.
 
 This repository will do the following:
-1. Download the zip file containing the trasport data.
+1. Download the zip file containing the transport data.
 2. Unzip and create database schema.
 3. Build insert queries from downloaded files.
 4. Create a postgres database with tables.
