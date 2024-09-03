@@ -2,15 +2,15 @@ version: '3'
 services:
   postgres:
     restart: always
-    image: postgres:latest
+    image: postgis/postgis:16-3.4
     volumes:
       - ./dbinit/:/docker-entrypoint-initdb.d/
-      - data
+      - ./data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5555:5432"
     environment:
       - POSTGRES_USER=paris-transport-username
       - POSTGRES_PASSWORD=paris-transport-password
-      - POSTGRES_DB=paristransport
+      - POSTGRES_DB=paris-transport-database
 volumes:
   data:
